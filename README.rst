@@ -17,8 +17,6 @@ Using default file:
      python kelkoo.py
 
 Custom Result File
-You can use the param -path to save generated xml in custom file path, example
-    python kelkoo.py -path /tmp/kelkoo.xml
-    python kelkoo.py -url http://beta.json-generator.com/api/json/get/Vkc8sKmHM -path /tmp/kelkoo.xml
+    python kelkoo.py -path /tmp/kelkoo.xml # You can use the param -path to save generated xml in custom file path
 
 author: jrolveras@gmail.com
