@@ -14,6 +14,11 @@ from kelkoo.services import ParseJSON
 def main():
     all_args = Args().grouped
 
+    path = None
+
+    if '-path' in all_args:
+        path = all_args['-path'].all[0]
+
     if '-url' in all_args and '-file' in all_args:
         puts(colored.red("Use -url or -file params, not both"))
 
@@ -25,7 +30,7 @@ def main():
 
             if isvalid_url(url_raw):
                 # init process
-                ParseJSON(url=url_raw, verbose=True)
+                ParseJSON(url=url_raw, verbose=True, path=path)
             else:
                 puts(colored.red("-url must be a valid url. Ex: http://www.madkting.com"))
 
@@ -36,12 +41,12 @@ def main():
             file_raw = all_args['-file'].all[0]
             # TODO: validate if file exist
             # init process
-            ParseJSON(file=file_raw, verbose=True)
+            ParseJSON(file=file_raw, verbose=True, path=path)
     else:
         puts(colored.yellow("Using default json"))
         file = os.getcwd() + '/assets/products_kelkoo.json'
         # pj.get_file_content(file)
-        ParseJSON(file=file, verbose=True)
+        ParseJSON(file=file, verbose=True, path=path)
 
 main()
 

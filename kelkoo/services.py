@@ -20,7 +20,7 @@ class ParseJSON(FileManager):
         if 'file' in kwargs and kwargs['file'] != '':
             self.json = self.get_file_content(**kwargs)
 
-            if not self.json  or '' == self.json :
+            if not self.json or '' == self.json :
                 raise ValueError("File content is blank")
 
             self.master_dict = json.loads(self.json)
@@ -53,18 +53,17 @@ class ParseJSON(FileManager):
                 bar_counter = 1
                 for obj in self.master_dict:
                     product = self.process_item(obj)
-                    # TODO: validation for product
 
-                    products_str += product.decode('utf-8')
+                    if product:
+                        products_str += product.decode('utf-8')
 
-                    sleep(0.1)
                     bar.show(bar_counter)
                     bar_counter += 1
         else:
             for obj in self.master_dict:
                 product = self.process_item(obj)
-                # TODO: validation for product
-                products_str += product.decode('utf-8')
+                if product:
+                    products_str += product.decode('utf-8')
 
         # not the best way to do this but YOLO
         xml_gen = '<?xml version="1.0" encoding="UTF-8" ?><products>{}</products>'.format(products_str)
@@ -77,13 +76,47 @@ class ParseJSON(FileManager):
             puts(colored.red("Script Miserably Fails. Shame!, shame!, shame!"))
 
     def process_item(self, obj):
-        # iterate object and validate fields
-        return dicttoxml(obj, root=False, attr_type=False, cdata=True)
+        if not self.validate(obj):
+            return False
+
+        # Assemble XML Object
+        return_obj = {}
+
+        for field in MAIN_FIELDS:
+            validate_function = globals()["validate_" + field['type']]
+            validate_result = None
+
+            if field['f'] is None:
+                validate_result = validate_function(None, **field)
+                if validate_result:
+                    return_obj.update(validate_result)
+                else:
+                    continue  # avoid next condition
+
+            if field['f'] in obj:
+                validate_result = validate_function(obj[field['f']], **field)
+                if validate_result:
+                    return_obj.update(validate_result)
+
+        return_obj = {
+            'product': return_obj
+        }
+
+        return dicttoxml(return_obj, root=False, attr_type=False, cdata=True)
 
     def validate(self, obj):
-        pass
+        """
+        Verify if obj has required fields defined in kelkoo.parsefields.MAIN_FIELDS
+        """
+        is_valid = True
 
-    def validate_field(self, field):
-        pass
+        # Only check if obj has the required fields
+        for field in MAIN_FIELDS:
+            if 'required' in field and field['required']:
+                if field['f'] is None:
+                    continue
 
+                if field['f'] not in obj:
+                    is_valid = False
 
+        return is_valid
